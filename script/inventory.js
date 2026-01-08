@@ -11,12 +11,16 @@ function addItemToBar(name, icon, label){
     item.appendChild(hoverLabel);
 
     container.appendChild(item);
+    
+    // Benachrichtigung anzeigen
+    showItemNotification(icon + " " + label + " erhalten!");
 
     item.onclick = () => {
         if(name === "Heiltrank" && playerLife < playerMaxLife){
             playerLife++;
             updatePlayerBar();
             container.removeChild(item);
+            updateItemBarVisibility();
             document.getElementById("feedback").innerText = "💙 Heiltrank benutzt! Leben +1";
         }
         else if(name === "Schwert"){
@@ -44,23 +48,77 @@ function addItemToBar(name, icon, label){
                     }
                 }
                 container.removeChild(item); // Verbrauchtes Item entfernen
+                updateItemBarVisibility();
             } else {
                 document.getElementById("feedback").innerText = "⚔️ Kein Gegner aktiv!";
+            }
+        }
+        else if(name === "Refresh"){
+            if(inLevel && currentNode){
+                // Neue Aufgabe generieren
+                if(currentNode.classList.contains("boss")){
+                    createBossTask();
+                } else if(currentNode.classList.contains("elite")){
+                    createEliteTask(currentNode);
+                } else {
+                    createTask(parseInt(currentNode.innerText));
+                }
+                container.removeChild(item);
+                updateItemBarVisibility();
+                document.getElementById("feedback").innerText = "🔄 Neue Aufgabe generiert!";
+            } else {
+                document.getElementById("feedback").innerText = "🔄 Keine aktive Aufgabe!";
             }
         }
     };
 }
 
+function giveHealthPotion(){
+    addItemToBar("Heiltrank", "💙", "💙 Heiltrank");
+}
+
+function updateItemBarVisibility(){
+    const container = document.getElementById("itemBar");
+    if(container.children.length > 0){
+        container.style.display = "flex";
+    } else {
+        container.style.display = "none";
+    }
+}
+
+function showItemNotification(message){
+    const notification = document.getElementById("itemNotification");
+    notification.innerText = message;
+    notification.style.display = "block";
+    
+    // Nach 2 Sekunden ausblenden
+    setTimeout(() => {
+        notification.style.display = "none";
+    }, 2000);
+}
+
 function dropItemAfterEliteOrBoss(){
     // 20% Chance für Schwert
-    if(Math.random() < 0.2){
+    const gotSword = Math.random() < 0.2;
+    if(gotSword){
         addItemToBar("Schwert", "🗡️", "⚔️+1");
         document.getElementById("feedback").innerText = "🎉 Du hast ein Schwert erhalten!";
     }
 
-    // 100% Heiltrank bei Elite, nur falls Spieler nicht voll Leben hat
+    // 5% Chance für Refresh-Item
+    const gotRefresh = Math.random() < 0.05;
+    if(gotRefresh){
+        addItemToBar("Refresh", "🔄", "🔄 Neue Aufgabe");
+    }
+
+    // Heiltrank, falls Spieler nicht voll Leben hat
     if(playerLife < playerMaxLife){
-        giveHealthPotion(); // siehe vorher
+        giveHealthPotion();
+    }
+    // Falls kein Item gedroppt wurde (kein Schwert und Leben ist voll), garantiere einen Heiltrank
+    else if(!gotSword && !gotRefresh){
+        giveHealthPotion();
+        document.getElementById("feedback").innerText = "🎉 Du hast einen Heiltrank erhalten!";
     }
 }
 

@@ -1,12 +1,39 @@
 /* --- Hilfsfunktionen --- */
 function toGerman(num){return num.toString().replace(".",",");}
 function fromGerman(str){return parseFloat(str.replace(",","."));}
-let debug = false; // true = Lösung wird automatisch ins Inputfeld geschrieben
+let debug = true; // true = Lösung wird automatisch ins Inputfeld geschrieben
+
+function toggleHint(){
+    const hintBox = document.getElementById("hintBox");
+    if(hintBox.style.display === "block"){
+        hintBox.style.display = "none";
+    } else {
+        hintBox.style.display = "block";
+    }
+}
 
 
 
 
 /* --- Globale Variablen --- */
+let currentLevel = "Dorf";
+let levelColors = {
+    "Dorf": {
+        primary: "#667eea",
+        secondary: "#764ba2",
+        node: "#444",
+        nodeBorder: "#777",
+        elite: "#8e44ad"
+    },
+    "Stadt": {
+        primary: "#f093fb",
+        secondary: "#f5576c",
+        node: "#5a2a27",
+        nodeBorder: "#d4a5a5",
+        elite: "#e74c3c"
+    }
+};
+
 let levels = [
     { count: 2, difficulty: 1 },
     { count: 3, difficulty: 2 },
@@ -126,14 +153,68 @@ function drawLines() {
 
 /* --- Aufgaben generieren --- */
 function createTask(level){
-    const ops=[{display:"+",calc:"+"},{display:"-",calc:"-"},{display:"·",calc:"*"},{display:":",calc:"/"}];
-    const op=ops[Math.floor(Math.random()*ops.length)];
-    let a=+(Math.random()*level*10).toFixed(1);
-    let b=+(Math.random()*level*5+1).toFixed(1);
-    solution=parseFloat(eval(`${a}${op.calc}${b}`).toFixed(2));
-    document.getElementById("taskText").innerText=`${toGerman(a)} ${op.display} ${toGerman(b)}`;
+    if(currentLevel === "Stadt"){
+        // Stadt: Einfache Aufgaben mit negativen Zahlen
+        // Jede Zahl bekommt eigene Nachkommastellenanzahl: 30% eine, 60% zwei, 10% drei
+        const getDecimals = () => {
+            const rand = Math.random();
+            return rand < 0.3 ? 1 : (rand < 0.9 ? 2 : 3);
+        };
+        const templates = [
+            // -a:(-b)
+            () => {
+                let a = +(Math.random()*10+1).toFixed(getDecimals());
+                let b = +(Math.random()*2+0.1).toFixed(getDecimals());
+                solution = parseFloat((-a/(-b)).toFixed(2));
+                return `${toGerman(-a)}:(${toGerman(-b)})`;
+            },
+            // (-a)-(-b)
+            () => {
+                let a = +(Math.random()*5+0.5).toFixed(getDecimals());
+                let b = +(Math.random()*5+1).toFixed(getDecimals());
+                solution = parseFloat((-a-(-b)).toFixed(2));
+                return `(${toGerman(-a)})-(${toGerman(-b)})`;
+            },
+            // -a+(-b)
+            () => {
+                let a = +(Math.random()*8+1).toFixed(getDecimals());
+                let b = +(Math.random()*5+1).toFixed(getDecimals());
+                solution = parseFloat((-a+(-b)).toFixed(2));
+                return `${toGerman(-a)}+(${toGerman(-b)})`;
+            },
+            // (-a)*b
+            () => {
+                let a = +(Math.random()*5+1).toFixed(getDecimals());
+                let b = +(Math.random()*3+1).toFixed(getDecimals());
+                solution = parseFloat((-a*b).toFixed(2));
+                return `(${toGerman(-a)})·${toGerman(b)}`;
+            },
+            // a*(-b)
+            () => {
+                let a = +(Math.random()*5+1).toFixed(getDecimals());
+                let b = +(Math.random()*3+1).toFixed(getDecimals());
+                solution = parseFloat((a*(-b)).toFixed(2));
+                return `${toGerman(a)}·(${toGerman(-b)})`;
+            }
+        ];
+        const template = templates[Math.floor(Math.random()*templates.length)];
+        document.getElementById("taskText").innerText = template();
+    } else {
+        // Dorf: Einfache Aufgaben
+        const ops=[{display:"+",calc:"+"},{display:"-",calc:"-"},{display:"·",calc:"*"},{display:":",calc:"/"}];
+        const op=ops[Math.floor(Math.random()*ops.length)];
+        // Jede Zahl bekommt eigene Nachkommastellenanzahl: 70% eine, 20% zwei, 10% drei
+        const getDecimals = () => {
+            const rand = Math.random();
+            return rand < 0.7 ? 1 : (rand < 0.9 ? 2 : 3);
+        };
+        let a=+(Math.random()*level*10).toFixed(getDecimals());
+        let b=+(Math.random()*level*5+1).toFixed(getDecimals());
+        solution=parseFloat(eval(`${a}${op.calc}${b}`).toFixed(2));
+        document.getElementById("taskText").innerText=`${toGerman(a)} ${op.display} ${toGerman(b)}`;
+    }
 
-        // Debug: Lösung direkt ins Inputfeld einfügen
+    // Debug: Lösung direkt ins Inputfeld einfügen
     if(debug){
         document.getElementById("answer").value = solution;
     } else {
@@ -143,12 +224,125 @@ function createTask(level){
 
 /* --- Boss --- */
 function createBossTask(){
-    let a=+(Math.random()*50+10).toFixed(2);
-    let b=+(Math.random()*20+1).toFixed(2);
-    solution=parseFloat(eval(`${a}*${b}`).toFixed(2));
-    document.getElementById("taskText").innerText=`👑 Bosskampf: ${toGerman(a)} · ${toGerman(b)}`;
+    if(currentLevel === "Stadt"){
+        // Stadt: Boss-Aufgaben mit 3 Operationen und negativen Zahlen
+        // Jede Zahl bekommt eigene Nachkommastellenanzahl: 30% eine, 60% zwei, 10% drei
+        const getDecimals = () => {
+            const rand = Math.random();
+            return rand < 0.3 ? 1 : (rand < 0.9 ? 2 : 3);
+        };
+        const templates = [
+            // -a:(-b)+c*d
+            () => {
+                let a = +(Math.random()*8+2).toFixed(getDecimals());
+                let b = +(Math.random()*2+0.2).toFixed(getDecimals());
+                let c = +(Math.random()*5+1).toFixed(getDecimals());
+                let d = +(Math.random()*3+0.5).toFixed(getDecimals());
+                solution = parseFloat((-a/(-b)+c*d).toFixed(2));
+                return `${toGerman(-a)}:(${toGerman(-b)})+${toGerman(c)}·${toGerman(d)}`;
+            },
+            // -a*b-(-c)+d
+            () => {
+                let a = +(Math.random()*5+1).toFixed(getDecimals());
+                let b = +(Math.random()*3+0.5).toFixed(getDecimals());
+                let c = +(Math.random()*8+2).toFixed(getDecimals());
+                let d = +(Math.random()*6+1).toFixed(getDecimals());
+                solution = parseFloat((-a*b-(-c)+d).toFixed(2));
+                return `${toGerman(-a)}·${toGerman(b)}-(${toGerman(-c)})+${toGerman(d)}`;
+            },
+            // (-a)+b*(-c)-d
+            () => {
+                let a = +(Math.random()*8+2).toFixed(getDecimals());
+                let b = +(Math.random()*4+1).toFixed(getDecimals());
+                let c = +(Math.random()*2+0.5).toFixed(getDecimals());
+                let d = +(Math.random()*5+1).toFixed(getDecimals());
+                solution = parseFloat(((-a)+b*(-c)-d).toFixed(2));
+                return `(${toGerman(-a)})+${toGerman(b)}·(${toGerman(-c)})-${toGerman(d)}`;
+            },
+            // -a:(-b)-c+d
+            () => {
+                let a = +(Math.random()*10+2).toFixed(getDecimals());
+                let b = +(Math.random()*2+0.3).toFixed(getDecimals());
+                let c = +(Math.random()*6+1).toFixed(getDecimals());
+                let d = +(Math.random()*8+1).toFixed(getDecimals());
+                solution = parseFloat((-a/(-b)-c+d).toFixed(2));
+                return `${toGerman(-a)}:(${toGerman(-b)})-${toGerman(c)}+${toGerman(d)}`;
+            },
+            // (-a)*(-b)-c+d
+            () => {
+                let a = +(Math.random()*5+1).toFixed(getDecimals());
+                let b = +(Math.random()*3+0.5).toFixed(getDecimals());
+                let c = +(Math.random()*8+2).toFixed(getDecimals());
+                let d = +(Math.random()*5+1).toFixed(getDecimals());
+                solution = parseFloat(((-a)*(-b)-c+d).toFixed(2));
+                return `(${toGerman(-a)})·(${toGerman(-b)})-${toGerman(c)}+${toGerman(d)}`;
+            }
+        ];
+        const template = templates[Math.floor(Math.random()*templates.length)];
+        document.getElementById("taskText").innerText=`👑 Bosskampf: ${template()}`;
+    } else {
+        // Dorf: Boss-Aufgaben mit 2 Operationen (1 Nachkommastelle)
+        // Jede Zahl bekommt eigene Nachkommastellenanzahl: 70% eine, 20% zwei, 10% drei
+        const getDecimals = () => {
+            const rand = Math.random();
+            return rand < 0.7 ? 1 : (rand < 0.9 ? 2 : 3);
+        };
+        const templates = [
+            // a * b + c
+            () => {
+                let a = +(Math.random()*10+5).toFixed(getDecimals());
+                let b = +(Math.random()*5+2).toFixed(getDecimals());
+                let c = +(Math.random()*20+5).toFixed(getDecimals());
+                solution = parseFloat((a*b+c).toFixed(2));
+                return `${toGerman(a)} · ${toGerman(b)} + ${toGerman(c)}`;
+            },
+            // a * b - c
+            () => {
+                let a = +(Math.random()*15+5).toFixed(getDecimals());
+                let b = +(Math.random()*5+2).toFixed(getDecimals());
+                let c = +(Math.random()*20+5).toFixed(getDecimals());
+                solution = parseFloat((a*b-c).toFixed(2));
+                return `${toGerman(a)} · ${toGerman(b)} - ${toGerman(c)}`;
+            },
+            // a : b + c
+            () => {
+                let a = +(Math.random()*50+20).toFixed(getDecimals());
+                let b = +(Math.random()*5+2).toFixed(getDecimals());
+                let c = +(Math.random()*15+5).toFixed(getDecimals());
+                solution = parseFloat((a/b+c).toFixed(2));
+                return `${toGerman(a)} : ${toGerman(b)} + ${toGerman(c)}`;
+            },
+            // a + b * c
+            () => {
+                let a = +(Math.random()*20+10).toFixed(getDecimals());
+                let b = +(Math.random()*8+2).toFixed(getDecimals());
+                let c = +(Math.random()*5+2).toFixed(getDecimals());
+                solution = parseFloat((a+b*c).toFixed(2));
+                return `${toGerman(a)} + ${toGerman(b)} · ${toGerman(c)}`;
+            },
+            // a - b * c
+            () => {
+                let a = +(Math.random()*50+20).toFixed(getDecimals());
+                let b = +(Math.random()*8+2).toFixed(getDecimals());
+                let c = +(Math.random()*5+2).toFixed(getDecimals());
+                solution = parseFloat((a-b*c).toFixed(2));
+                return `${toGerman(a)} - ${toGerman(b)} · ${toGerman(c)}`;
+            }
+        ];
+        const template = templates[Math.floor(Math.random()*templates.length)];
+        document.getElementById("taskText").innerText=`👑 Bosskampf: ${template()}`;
+    }
+    
     document.getElementById("bossBar").style.display="block";
+    updateItemBarVisibility();
     updateBossBar();
+
+    // Debug: Lösung direkt ins Inputfeld einfügen
+    if(debug){
+        document.getElementById("answer").value = toGerman(solution);
+    } else {
+        document.getElementById("answer").value = "";
+    }
 }
 function updateBossBar(){
     const percent=(bossLife/bossMaxLife)*100;
@@ -165,17 +359,93 @@ function updatePlayerBar(){
 
 /* --- Elite --- */
 function createEliteTask(node){
-    const ops=[{display:"+",calc:"+"},{display:"-",calc:"-"},{display:"·",calc:"*"},{display:":",calc:"/"}];
-    const op=ops[Math.floor(Math.random()*ops.length)];
-    let level = 3;
-    let a=+(Math.random()*level*10).toFixed(1);
-    let b=+(Math.random()*level*5+1).toFixed(1);
-    solution=parseFloat(eval(`${a}${op.calc}${b}`).toFixed(2));
-    document.getElementById("taskText").innerText=`👾 Elite: ${toGerman(a)} ${op.display} ${toGerman(b)}`;
+    if(currentLevel === "Stadt"){
+        // Stadt: Mittelmaß zwischen Stadt und Boss - 2-3 Operationen mit negativen Zahlen
+        // Jede Zahl bekommt eigene Nachkommastellenanzahl: 30% eine, 60% zwei, 10% drei
+        const getDecimals = () => {
+            const rand = Math.random();
+            return rand < 0.3 ? 1 : (rand < 0.9 ? 2 : 3);
+        };
+        const templates = [
+            // -a:(-b)+c
+            () => {
+                let a = +(Math.random()*10+2).toFixed(getDecimals());
+                let b = +(Math.random()*2+0.2).toFixed(getDecimals());
+                let c = +(Math.random()*8+1).toFixed(getDecimals());
+                solution = parseFloat((-a/(-b)+c).toFixed(2));
+                return `${toGerman(-a)}:(${toGerman(-b)})+${toGerman(c)}`;
+            },
+            // -a*b-(-c)
+            () => {
+                let a = +(Math.random()*6+1).toFixed(getDecimals());
+                let b = +(Math.random()*3+0.5).toFixed(getDecimals());
+                let c = +(Math.random()*8+2).toFixed(getDecimals());
+                solution = parseFloat((-a*b-(-c)).toFixed(2));
+                return `${toGerman(-a)}·${toGerman(b)}-(${toGerman(-c)})`;
+            },
+            // (-a)+b*(-c)
+            () => {
+                let a = +(Math.random()*8+2).toFixed(getDecimals());
+                let b = +(Math.random()*5+1).toFixed(getDecimals());
+                let c = +(Math.random()*3+0.5).toFixed(getDecimals());
+                solution = parseFloat(((-a)+b*(-c)).toFixed(2));
+                return `(${toGerman(-a)})+${toGerman(b)}·(${toGerman(-c)})`;
+            },
+            // -a:(-b)-c
+            () => {
+                let a = +(Math.random()*12+2).toFixed(getDecimals());
+                let b = +(Math.random()*3+0.3).toFixed(getDecimals());
+                let c = +(Math.random()*8+1).toFixed(getDecimals());
+                solution = parseFloat((-a/(-b)-c).toFixed(2));
+                return `${toGerman(-a)}:(${toGerman(-b)})-${toGerman(c)}`;
+            },
+            // (-a)*(-b)+c
+            () => {
+                let a = +(Math.random()*5+1).toFixed(getDecimals());
+                let b = +(Math.random()*3+0.5).toFixed(getDecimals());
+                let c = +(Math.random()*10+2).toFixed(getDecimals());
+                solution = parseFloat(((-a)*(-b)+c).toFixed(2));
+                return `(${toGerman(-a)})·(${toGerman(-b)})+${toGerman(c)}`;
+            },
+            // a-(-b)*c
+            () => {
+                let a = +(Math.random()*10+5).toFixed(getDecimals());
+                let b = +(Math.random()*4+1).toFixed(getDecimals());
+                let c = +(Math.random()*3+1).toFixed(getDecimals());
+                solution = parseFloat((a-(-b)*c).toFixed(2));
+                return `${toGerman(a)}-(${toGerman(-b)})·${toGerman(c)}`;
+            }
+        ];
+        const template = templates[Math.floor(Math.random()*templates.length)];
+        document.getElementById("taskText").innerText=`👾 Elite: ${template()}`;
+    } else {
+        // Dorf: Einfache Elite-Aufgaben
+        const ops=[{display:"+",calc:"+"},{display:"-",calc:"-"},{display:"·",calc:"*"},{display:":",calc:"/"}];
+        const op=ops[Math.floor(Math.random()*ops.length)];
+        let level = 3;
+        // Jede Zahl bekommt eigene Nachkommastellenanzahl: 70% eine, 20% zwei, 10% drei
+        const getDecimals = () => {
+            const rand = Math.random();
+            return rand < 0.7 ? 1 : (rand < 0.9 ? 2 : 3);
+        };
+        let a=+(Math.random()*level*10).toFixed(getDecimals());
+        let b=+(Math.random()*level*5+1).toFixed(getDecimals());
+        solution=parseFloat(eval(`${a}${op.calc}${b}`).toFixed(2));
+        document.getElementById("taskText").innerText=`👾 Elite: ${toGerman(a)} ${op.display} ${toGerman(b)}`;
+    }
+    
     document.getElementById("taskBox").style.display="block";
     document.getElementById("eliteBar").style.display = "block";
+    updateItemBarVisibility();
     updateEliteBar(node);
     inLevel=true;
+
+    // Debug: Lösung direkt ins Inputfeld einfügen
+    if(debug){
+        document.getElementById("answer").value = toGerman(solution);
+    } else {
+        document.getElementById("answer").value = "";
+    }
 }
 function updateEliteBar(node){
     const percent = (node.eliteCurrentLife / node.eliteLife)*100;
@@ -212,6 +482,7 @@ function activateNodes(){
                 createBossTask();
             } else {
                 createTask(parseInt(node.innerText));
+                updateItemBarVisibility();
             }
         };
     });
@@ -226,12 +497,26 @@ function checkAnswer(){
     if(Math.abs(user-solution)<0.01){
         if(currentNode.classList.contains("boss")){
             bossLife--; updateBossBar();
-            if(bossLife>0){ createBossTask(); document.getElementById("answer").value=""; return;}
+            if(bossLife>0){ createBossTask(); return;}
             else {
                 document.getElementById("bossBar").style.display="none";
                 stopTimer(); // Timer stoppen
                 const elapsedTime = getElapsedTime(); // Timer stoppen/erhalten
                 document.getElementById("bossTime").innerText = elapsedTime; // ✅ hier einfügen
+                
+                // Submessage nur im Dorf anzeigen, im Stadt andere Nachricht
+                if(currentLevel === "Dorf"){
+                    document.getElementById("victoryTitle").innerText = "🎉 Boss besiegt! 🎉";
+                    document.getElementById("victoryMessage").innerText = "Du hast das Dorf befreit!";
+                    document.getElementById("victorySubMessage").innerText = "Gehe weiter in die Stadt";
+                    document.getElementById("victorySubMessage").style.display = "block";
+                } else if(currentLevel === "Stadt"){
+                    document.getElementById("victoryTitle").innerText = "🎉 Stadt befreit! 🎉";
+                    document.getElementById("victoryMessage").innerText = "Du hast alle Herausforderungen gemeistert!";
+                    document.getElementById("victorySubMessage").innerText = "Du hast dir einen Lobschein verdient! Zeige einen Screenshot deinem Lehrer";
+                    document.getElementById("victorySubMessage").style.display = "block";
+                }
+                
                 bossModal.style.display="flex";  // Modal anzeigen
                 startConfetti();     
                 dropItemAfterEliteOrBoss();             // Konfetti starten
@@ -240,12 +525,13 @@ function checkAnswer(){
             currentNode.eliteCurrentLife--;
             updateEliteBar(currentNode);
             document.getElementById("feedback").innerText="✅ Aufgabe geschafft!";
-            if(currentNode.eliteCurrentLife>0){ createEliteTask(currentNode); document.getElementById("answer").value=""; return;}
+            if(currentNode.eliteCurrentLife>0){ createEliteTask(currentNode); return;}
             else {
                 currentNode.classList.add("completed");
                 document.getElementById("eliteBar").style.display="none";
                 inLevel=false;
                 document.getElementById("taskBox").style.display="none";
+                document.getElementById("itemBar").style.display="none";
                 (connections[currentNode.id]||[]).forEach(id=>nodes[id].classList.remove("locked"));
                 document.getElementById("answer").value="";
     
@@ -256,6 +542,7 @@ function checkAnswer(){
             currentNode.classList.add("completed");
             inLevel=false;
             document.getElementById("taskBox").style.display="none";
+            document.getElementById("itemBar").style.display="none";
             (connections[currentNode.id]||[]).forEach(id=>nodes[id].classList.remove("locked"));
         }
     } else {
@@ -315,7 +602,111 @@ function generateMap(){
 }
 
 /* --- Start --- */
-generateMap();
+function applyLevelColors(){
+    const colors = levelColors[currentLevel];
+    const root = document.documentElement;
+    
+    // Level-Anzeige aktualisieren
+    const levelIcon = currentLevel === "Dorf" ? "🏘️" : "🏙️";
+    document.getElementById("levelDisplay").innerText = `${levelIcon} ${currentLevel}`;
+    document.getElementById("levelDisplay").style.color = colors.primary;
+    
+    // Knoten-Farben anpassen (aber completed Nodes nicht überschreiben)
+    Object.values(nodes).forEach(node => {
+        if(node.classList.contains("completed")) return; // Grüne completed Nodes nicht überschreiben
+        if(!node.classList.contains("elite") && !node.classList.contains("boss")){
+            node.style.background = colors.node;
+            node.style.borderColor = colors.nodeBorder;
+        } else if(node.classList.contains("elite")){
+            node.style.background = colors.elite;
+        }
+    });
+}
+
+function startGame(){
+    // Startscreen ausblenden
+    document.getElementById("startScreen").style.display = "none";
+    
+    // Spielinhalt anzeigen
+    document.querySelector(".gameContent").style.display = "block";
+    
+    // Map generieren und Timer starten
+    generateMap();
+    applyLevelColors();
+    startTimer();
+}
+
+function restartGame(){
+    // Spielvariablen zurücksetzen
+    nodes = {};
+    connections = {};
+    currentNode = null;
+    solution = 0;
+    inLevel = false;
+    bossLife = 3;
+    playerLife = 3;
+    
+    // UI zurücksetzen
+    document.getElementById("taskBox").style.display = "none";
+    document.getElementById("bossBar").style.display = "none";
+    document.getElementById("eliteBar").style.display = "none";
+    document.getElementById("itemBar").style.display = "none";
+    document.getElementById("answer").value = "";
+    document.getElementById("feedback").innerText = "";
+    document.getElementById("itemBar").innerHTML = "";
+    
+    // Spieler-Leben aktualisieren
+    updatePlayerBar();
+    
+    // Timer zurücksetzen
+    stopTimer();
+    startTime = null;
+    accumulatedTime = 0;
+    document.getElementById("timer").innerText = "⏱ 0:00";
+    
+    // Neue Map generieren und Timer starten
+    generateMap();
+    applyLevelColors();
+    startTimer();
+}
+
+// Fortsetzung ohne Timer-Reset (für Levelwechsel Dorf -> Stadt)
+function continueToNextLevel(){
+    // Spielvariablen zurücksetzen
+    nodes = {};
+    connections = {};
+    currentNode = null;
+    solution = 0;
+    inLevel = false;
+    bossLife = 3;
+    playerLife = 3;
+    
+    // UI zurücksetzen
+    document.getElementById("taskBox").style.display = "none";
+    document.getElementById("bossBar").style.display = "none";
+    document.getElementById("eliteBar").style.display = "none";
+    document.getElementById("itemBar").style.display = "none";
+    document.getElementById("answer").value = "";
+    document.getElementById("feedback").innerText = "";
+    document.getElementById("itemBar").innerHTML = "";
+    
+    // Spieler-Leben aktualisieren
+    updatePlayerBar();
+    
+    // Timer NICHT zurücksetzen - läuft weiter
+    
+    // Neue Map generieren
+    generateMap();
+    applyLevelColors();
+}
+
+// Enter-Taste im Eingabefeld aktivieren
+document.getElementById("answer").addEventListener("keypress", function(event){
+    if(event.key === "Enter"){
+        event.preventDefault();
+        checkAnswer();
+    }
+});
 
 
 

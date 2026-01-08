@@ -8,6 +8,16 @@ const restartModalBtn = document.getElementById("restartModal");
 closeModalBtn.onclick = () => {
     bossModal.style.display = "none";
     stopConfetti();
+    
+    // Level-Wechsel: Dorf -> Stadt
+    if(currentLevel === "Dorf"){
+        currentLevel = "Stadt";
+        document.getElementById("victoryTitle").innerText = "🏙️ Willkommen in der Stadt!";
+        document.getElementById("victoryMessage").innerText = "Neue Herausforderungen warten...";
+        document.getElementById("victorySubMessage").style.display = "none"; // Submessage ausblenden in Stadt
+        applyLevelColors();
+        continueToNextLevel(); // Timer läuft weiter
+    }
 };
 
 // Konfetti Setup
@@ -68,5 +78,6 @@ function stopConfetti(){
 
 restartModalBtn.onclick = () => {
     gameOverModal.style.display = "none";
-    resetGame();  // Map und Leben zurücksetzen
+    currentLevel = "Dorf";  // Zurück zum Dorf nach Game Over
+    restartGame();  // Spiel direkt neu starten ohne Startscreen
 };
