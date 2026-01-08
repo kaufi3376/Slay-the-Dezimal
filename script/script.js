@@ -1,7 +1,7 @@
 /* --- Hilfsfunktionen --- */
 function toGerman(num){return num.toString().replace(".",",");}
 function fromGerman(str){return parseFloat(str.replace(",","."));}
-let debug = true; // true = Lösung wird automatisch ins Inputfeld geschrieben
+let debug = false; // true = Lösung wird automatisch ins Inputfeld geschrieben
 
 function toggleHint(){
     const hintBox = document.getElementById("hintBox");
