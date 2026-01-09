@@ -164,7 +164,7 @@ function createTask(level){
             // -a:(-b)
             () => {
                 let a = +(Math.random()*10+1).toFixed(getDecimals());
-                let b = +(Math.random()*2+0.1).toFixed(getDecimals());
+                let b = +(Math.random()*2+0.1).toFixed(Math.min(getDecimals(), 2));
                 solution = parseFloat((-a/(-b)).toFixed(2));
                 return `${toGerman(-a)}:(${toGerman(-b)})`;
             },
@@ -209,7 +209,8 @@ function createTask(level){
             return rand < 0.7 ? 1 : (rand < 0.9 ? 2 : 3);
         };
         let a=+(Math.random()*level*10).toFixed(getDecimals());
-        let b=+(Math.random()*level*5+1).toFixed(getDecimals());
+        let bDecimals = op.calc === "/" ? Math.min(getDecimals(), 2) : getDecimals();
+        let b=+(Math.random()*level*5+1).toFixed(bDecimals);
         solution=parseFloat(eval(`${a}${op.calc}${b}`).toFixed(2));
         document.getElementById("taskText").innerText=`${toGerman(a)} ${op.display} ${toGerman(b)}`;
     }
@@ -235,7 +236,7 @@ function createBossTask(){
             // -a:(-b)+c*d
             () => {
                 let a = +(Math.random()*8+2).toFixed(getDecimals());
-                let b = +(Math.random()*2+0.2).toFixed(getDecimals());
+                let b = +(Math.random()*2+0.2).toFixed(Math.min(getDecimals(), 2));
                 let c = +(Math.random()*5+1).toFixed(getDecimals());
                 let d = +(Math.random()*3+0.5).toFixed(getDecimals());
                 solution = parseFloat((-a/(-b)+c*d).toFixed(2));
@@ -262,7 +263,7 @@ function createBossTask(){
             // -a:(-b)-c+d
             () => {
                 let a = +(Math.random()*10+2).toFixed(getDecimals());
-                let b = +(Math.random()*2+0.3).toFixed(getDecimals());
+                let b = +(Math.random()*2+0.3).toFixed(Math.min(getDecimals(), 2));
                 let c = +(Math.random()*6+1).toFixed(getDecimals());
                 let d = +(Math.random()*8+1).toFixed(getDecimals());
                 solution = parseFloat((-a/(-b)-c+d).toFixed(2));
@@ -307,7 +308,7 @@ function createBossTask(){
             // a : b + c
             () => {
                 let a = +(Math.random()*50+20).toFixed(getDecimals());
-                let b = +(Math.random()*5+2).toFixed(getDecimals());
+                let b = +(Math.random()*5+2).toFixed(Math.min(getDecimals(), 2));
                 let c = +(Math.random()*15+5).toFixed(getDecimals());
                 solution = parseFloat((a/b+c).toFixed(2));
                 return `${toGerman(a)} : ${toGerman(b)} + ${toGerman(c)}`;
@@ -370,7 +371,7 @@ function createEliteTask(node){
             // -a:(-b)+c
             () => {
                 let a = +(Math.random()*10+2).toFixed(getDecimals());
-                let b = +(Math.random()*2+0.2).toFixed(getDecimals());
+                let b = +(Math.random()*2+0.2).toFixed(Math.min(getDecimals(), 2));
                 let c = +(Math.random()*8+1).toFixed(getDecimals());
                 solution = parseFloat((-a/(-b)+c).toFixed(2));
                 return `${toGerman(-a)}:(${toGerman(-b)})+${toGerman(c)}`;
@@ -394,7 +395,7 @@ function createEliteTask(node){
             // -a:(-b)-c
             () => {
                 let a = +(Math.random()*12+2).toFixed(getDecimals());
-                let b = +(Math.random()*3+0.3).toFixed(getDecimals());
+                let b = +(Math.random()*3+0.3).toFixed(Math.min(getDecimals(), 2));
                 let c = +(Math.random()*8+1).toFixed(getDecimals());
                 solution = parseFloat((-a/(-b)-c).toFixed(2));
                 return `${toGerman(-a)}:(${toGerman(-b)})-${toGerman(c)}`;
@@ -429,7 +430,8 @@ function createEliteTask(node){
             return rand < 0.7 ? 1 : (rand < 0.9 ? 2 : 3);
         };
         let a=+(Math.random()*level*10).toFixed(getDecimals());
-        let b=+(Math.random()*level*5+1).toFixed(getDecimals());
+        let bDecimals = op.calc === "/" ? Math.min(getDecimals(), 2) : getDecimals();
+        let b=+(Math.random()*level*5+1).toFixed(bDecimals);
         solution=parseFloat(eval(`${a}${op.calc}${b}`).toFixed(2));
         document.getElementById("taskText").innerText=`👾 Elite: ${toGerman(a)} ${op.display} ${toGerman(b)}`;
     }
